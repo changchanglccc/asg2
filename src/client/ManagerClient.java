@@ -19,13 +19,13 @@ public class ManagerClient {
 
         do {
 
-            System.out.print("\n **** Manager Menu for " + managerID + "**** \n"
-                    + "1. Create Doctor Record\n"
-                    + "2. Create Nurse Record\n"
-                    + "3. Get Record Count\n"
-                    + "4. Edit an Existing Record\n"
-                    + "5. Transfer Record \n"
-                    + "0. Quit\n"
+            System.out.print("\n ====== Manager Menu for " + managerID + "====== \n"
+                    + "1. Create Doctor Record ------ \n"
+                    + "2. Create Nurse Record ------ \n"
+                    + "3. Get Record Count ------ \n"
+                    + "4. Edit an Existing Record ------ \n"
+                    + "5. Transfer Record ------ \n"
+                    + "0. Quit ------ \n"
                     + "\n"
                     + "Enter Selection: ");
 
