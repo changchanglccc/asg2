@@ -70,23 +70,23 @@ public class Client_Config{
 		
 	}
 
-	public String createDRecord(String managerID, String firstName, String lastName, String address, String phone,
+	public String createTRecord(String managerID, String firstName, String lastName, String address, String phone,
 			String specialization, String location) {
 		
-		logFile(managerID, "Manager choose to create Doctor Record !" + "\n" );
+		logFile(managerID, "Manager choose to create Teacher Record !" + "\n" );
 		String result;
 		result = STUB.createTRecord(managerID, firstName, lastName, address, phone, specialization, location);
-		logFile(managerID, "Manager Create Doctor Record Succeed!" + "\n" + result);
+		logFile(managerID, "Manager Create Teacher Record Succeed!" + "\n" + result);
 		return result;
 	}
 
-	public String createNRecord(String managerID, String firstName, String lastName, String designation, String status,
+	public String createSRecord(String managerID, String firstName, String lastName, String courseRegistered, String status,
 			String statusDate) {
 
-		logFile(managerID, "Manager choose to create Nurse Record !" + "\n" );
+		logFile(managerID, "Manager choose to create Student Record !" + "\n" );
 		String result;
-		result = STUB.createSRecord(managerID, firstName, lastName, designation, status, statusDate);
-		logFile(managerID, "Manager Create Nurse Record Succeed!" + "\n" + result);
+		result = STUB.createSRecord(managerID, firstName, lastName, courseRegistered, status, statusDate);
+		logFile(managerID, "Manager Create Student Record Succeed!" + "\n" + result);
 		return result;
 	}
 
