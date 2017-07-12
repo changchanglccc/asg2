@@ -16,15 +16,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import DSMS_CORBA.DSMS_Interface;
+import DSMS_CORBA.DSMS_InterfaceHelper;
+import DSMS_CORBA.DSMS_InterfacePOA;
 import org.omg.CORBA.ORB;
-import org.omg.CosNaming.NameComponent;
-import org.omg.CosNaming.NamingContext;
-import org.omg.CosNaming.NamingContextHelper;
-
-import DSMS_CORBA._DSMS_InterfaceImplBase;
+import org.omg.CosNaming.*;
+import org.omg.PortableServer.POA;
+import org.omg.PortableServer.POAHelper;
 
 
-public class SchoolServer extends _DSMS_InterfaceImplBase{
+public class SchoolServer extends DSMS_InterfacePOA{
 	
 	final static String[] SchoolServers = {"MTL", "LVL", "DDO"};
 	
@@ -36,7 +37,7 @@ public class SchoolServer extends _DSMS_InterfaceImplBase{
         this.name = SchoolServer;
         this.records = RecordContainer.getRecordContainer(name);
         
-        logFile(name, "Server "+ name + "is running");
+        logFile(name, "Server "+ name + " is running");
 	}
     
     /** Creates Logs **/
@@ -74,17 +75,18 @@ public class SchoolServer extends _DSMS_InterfaceImplBase{
        
         // Start a thread of each station
         for (String SchoolServer : SchoolServers) {
-            SchoolServer clinic = new SchoolServer(SchoolServer);
+            SchoolServer school = new SchoolServer(SchoolServer);
 
-            clinic.startServerThreads();
+            school.startServerThreads();
         }
     }
     
     /**
      * Given a serverName, determine which port its UDP server is on
      *
-     * @param string clinicName
+     * @param string schoolName
      * @return port
+     *
      */
     protected int portHash(String string) {
         int bucket = 0;
@@ -117,31 +119,28 @@ public class SchoolServer extends _DSMS_InterfaceImplBase{
      * initial CORBA
      */
 	public void exportRPC() {
-		
-		ORB orb = ORB.init(new String[]{"-ORBInitialHost", "localhost", "-ORBInitialPort", "1050"}, null);
 
-        orb.connect(this);
-        
-        org.omg.CORBA.Object objRef;
         try {
-            objRef = orb.resolve_initial_references("NameService");
-        } catch (Exception ex) {
-            throw new RuntimeException("NameService", ex);
+            ORB orb = ORB.init(new String[]{"-ORBInitialHost", "localhost", "-ORBInitialPort", "1050"}, null);
+            POA rootpoa = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+            rootpoa.the_POAManager().activate();
+            org.omg.CORBA.Object ref = rootpoa.servant_to_reference(this);
+            DSMS_Interface href = DSMS_InterfaceHelper.narrow(ref);
+            org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
+            // Use NamingContextExt which is part of the Interoperable
+            // Naming Service (INS) specification.
+            NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
+            NameComponent path[] = ncRef.to_name(this.name);
+            ncRef.rebind(path, href);
+            System.out.println(this.name + "Server ready and waiting ...");
+            // wait for invocations from clients
+            orb.run();
+        }catch (Exception e){
+            System.err.println("ERROR: " + e);
+            e.printStackTrace(System.out);
         }
-        NamingContext ncRef = NamingContextHelper.narrow(objRef);
-
-        // bind the Object Reference in Naming
-        NameComponent nc = new NameComponent(this.name, "");
-        NameComponent path[] = {nc};
-        try {
-            ncRef.rebind(path, this);;
-        } catch (Exception ex) {
-            throw new RuntimeException("bind", ex);
-        }
-        System.out.println(this.name + "Clinic Server Exiting ...");
-        orb.run();
-		
-	}
+        System.out.println(this.name+"server exiting...");
+    }
 	
 	protected void exportUDP() {
 		int recvPort = portHash(name);
@@ -183,7 +182,7 @@ public class SchoolServer extends _DSMS_InterfaceImplBase{
      * @param request
      * @return
      */
-	protected Map<String,String> handleRequest(Map<String, String> request) {
+	protected Map<String,String> handleRequest(Map<String, String> request) { //NEW THREAD 跑
 		String action = request.get("action");
 		HashMap<String,String> response = new HashMap<String,String>();
 		
@@ -236,14 +235,14 @@ public class SchoolServer extends _DSMS_InterfaceImplBase{
 	@Override
 	public String getRecordCounts(String managerID) {
 		String counts = "";
-		for (String clinicName : SchoolServers){
+		for (String schoolName : SchoolServers){
 			try {
                 // only kind of request but send it anyways
                 String request = "action:recordCount";
 
                 DatagramSocket socket = new DatagramSocket();
                 InetAddress addr = InetAddress.getByName("localhost");
-                int port = this.portHash(clinicName);
+                int port = this.portHash(schoolName);
                 DatagramPacket packet = new DatagramPacket(request.getBytes(), request.length(), addr, port);
                 socket.send(packet);
                 byte[] buffer = new byte[1500];
@@ -257,9 +256,9 @@ public class SchoolServer extends _DSMS_InterfaceImplBase{
 
                 if (response.startsWith("recordCount:")) {
                     String count = response.substring(response.indexOf(":") + 1);
-                    counts += clinicName + " : " + count + ", ";
+                    counts += schoolName + " : " + count + ", ";
                 } else {
-                    counts += clinicName + " responded badly, ";
+                    counts += schoolName + " responded badly, ";
                 }
 
                 socket.close();

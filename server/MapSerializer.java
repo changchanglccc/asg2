@@ -8,7 +8,6 @@ public class MapSerializer {
 	/**
      * parse a string into a Map
      *
-     * @param in content to parse
      * @return parsed output as map
      */
 	public static Map<String, String> parse(String requestString) {
@@ -28,7 +27,6 @@ public class MapSerializer {
 	/**
      * create a string which is the serialzation of a map
      *
-     * @param in map to serialize
      * @return
      */
 	public static String stringify(Map<String, String> response) {

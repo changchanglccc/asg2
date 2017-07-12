@@ -1,13 +1,13 @@
 package server;
-
 import java.util.HashMap;
 
-public class RecordContainer {
+
+public class RecordContainer {  //存起来各个Records
 	
 	protected long nextId = 10000;
 	
-	protected final Object idlock = new Object();
-    final HashMap<String, Record>[] records = new HashMap[26];
+	protected final Object idlock = new Object();   //TODO: 为什么用Object呀？
+    final HashMap<String, Record>[] records = new HashMap[26];   //TODO:真正含义：包含26个hashmap的数组，每一个hashmap是用来存记录的
     final Object recordsLock = new Object();
 
 	public static RecordContainer getRecordContainer(String name) {
@@ -20,12 +20,11 @@ public class RecordContainer {
 		for (int i = 0; i < 26; i++) {
             records[i] = new HashMap<String, Record>();
         }
-		
 	}
 
 	public int getRecordCount() {
 		int count = 0;
-        synchronized (records) {
+        synchronized (records) {            //TODO：算count的时候必须同步！
             for (HashMap map : records) {
                 count += map.size();
             }
@@ -33,7 +32,7 @@ public class RecordContainer {
         return count;
 	}
 
-	public long getNextFreeId() {
+	public long getNextFreeId() {   //TODO:用处？
 		synchronized (idlock) {
             return nextId++;
 		}
@@ -42,12 +41,7 @@ public class RecordContainer {
 	public void addRecord(Record record) {
 		String lastName = record.getLastName();
 
-        // get the lower five bits representing which letter we are after
-        // minus one since letters start at 1
-
-        //int entry = (Character.getNumericValue(lastName.charAt(0)) & 0x1f) - 1;
-
-        int entry = lastName.toLowerCase().codePointAt(0) - "a".codePointAt(0);
+        int entry = lastName.toLowerCase().codePointAt(0) - "a".codePointAt(0); //TODO:确保名字是以字母开头的，并且知道是第几个字母
 
         if (entry < 0 || entry >= 26) {
             throw new RuntimeException(lastName + " is a bad last name");
@@ -68,7 +62,7 @@ public class RecordContainer {
             throw new RuntimeException(lastName + " is a bad last name");
         }
 
-        HashMap<String, Record> entries = records[entry];
+        HashMap<String, Record> entries = records[entry];  //TODO:以字母的位置 找到某一个hashmap
 
         synchronized (entries) {
             entries.remove(id);

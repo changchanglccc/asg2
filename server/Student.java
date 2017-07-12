@@ -8,7 +8,6 @@ public class Student extends Record {
 
 	@Override
 	public String getRecordType() {
-		// TODO Auto-generated method stub
 		return "SR";
 	}
 	

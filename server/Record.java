@@ -171,7 +171,6 @@ public abstract class Record {
 	}
 
 	public String getId() {
-		// TODO Auto-generated method stub
 		return getRecordType() + id;
 	}
 

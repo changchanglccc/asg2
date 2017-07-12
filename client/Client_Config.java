@@ -9,9 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.omg.CORBA.ORB;
-import org.omg.CosNaming.NameComponent;
-import org.omg.CosNaming.NamingContext;
-import org.omg.CosNaming.NamingContextHelper;
+import org.omg.CosNaming.*;
 
 import DSMS_CORBA.DSMS_Interface;
 import DSMS_CORBA.DSMS_InterfaceHelper;
@@ -43,7 +41,8 @@ public class Client_Config{
 	}
 
 	public Client_Config(String managerID) {
-		if (!managerID.matches("MTL[0-9]{4}")){
+		if (!managerID.matches("MTL[0-9]{4}" )&&!managerID.matches("LVL[0-9]{4}")
+				&&!managerID.matches("DDO[0-9]{4}")){
             throw new RuntimeException("Bad Manager ID");
         }
 		this.managerID = managerID;
@@ -57,13 +56,11 @@ public class Client_Config{
             ORB orb = ORB.init(new String[]{"-ORBInitialHost", "localhost", "-ORBInitialPort", "1050"}, null);
 
             org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
-            NamingContext ncRef = NamingContextHelper.narrow(objRef);
 
-            NameComponent nc = new NameComponent(schoolServer, "");
-            NameComponent path[] = {nc};
-            STUB = DSMS_InterfaceHelper.narrow(ncRef.resolve(path));
+			NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
+			STUB = DSMS_InterfaceHelper.narrow(ncRef.resolve_str(schoolServer));
+			logFile(managerID, "Connected!");
 
-            logFile(managerID, "Connected!");
         } catch (Exception ex) {
             logFile(managerID, ex.toString() + ex.getMessage());
         }
